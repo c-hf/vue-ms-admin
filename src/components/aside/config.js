@@ -1,8 +1,9 @@
 export const menuRouterList = {
 	'/': '首页',
 	'/device': '概览',
-	'/device/access': '设备接入',
-	'/device/control': '设备管理',
+	'/device/classify': '设备分类',
+	'/device/param': '设备参数',
+	'/device/attr': '设备属性',
 	'/message': '消息中心',
 	'/set': '设置',
 };

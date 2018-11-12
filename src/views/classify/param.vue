@@ -38,7 +38,7 @@
                                                  label="单位">
                                 </el-table-column>
                                 <el-table-column label="操作">
-                                    <template slot-scope="scope">
+                                    <template :slot-scope="scope">
                                         <el-button v-if="!custom"
                                                    type="text"
                                                    size="mini"
@@ -123,6 +123,7 @@ export default {
 	name: 'AccessParam',
 	data() {
 		return {
+			scope: 'scope',
 			disabled: false,
 			dialogVisible: false,
 			attr: {},

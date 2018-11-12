@@ -25,23 +25,32 @@
                 <i class="fa fa-home fa-fw fa-lg"></i>
                 <span slot="title">&nbsp;&nbsp;首页</span>
             </el-menu-item>
+            <el-menu-item index="user"
+                          :route="{name: 'home'}">
+                <i class="fa fa-user fa-fw fa-lg"></i>
+                <span slot="title">&nbsp;&nbsp;用户模块</span>
+            </el-menu-item>
             <el-submenu index="device">
                 <template slot="title">
                     <i class="fa fa-briefcase fa-fw fa-lg"></i>
-                    <span slot="title">&nbsp;&nbsp;控制台</span>
+                    <span slot="title">&nbsp;&nbsp;设备模块</span>
                 </template>
                 <el-menu-item-group>
                     <el-menu-item index="/device"
                                   :route="{name: 'device'}">
-                        概览
+                        设备概览
                     </el-menu-item>
-                    <el-menu-item index="/device/access"
-                                  :route="{name: 'access'}">
-                        设备接入
+                    <el-menu-item index="/device/classify"
+                                  :route="{name: 'classify'}">
+                        设备分类
                     </el-menu-item>
-                    <el-menu-item index="/device/control"
-                                  :route="{name: 'control'}">
-                        设备管理
+                    <el-menu-item index="/device/param"
+                                  :route="{name: 'param'}">
+                        设备参数
+                    </el-menu-item>
+                    <el-menu-item index="/device/attr"
+                                  :route="{name: 'attr'}">
+                        设备属性
                     </el-menu-item>
                 </el-menu-item-group>
             </el-submenu>

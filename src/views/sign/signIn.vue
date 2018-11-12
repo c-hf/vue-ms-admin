@@ -8,8 +8,8 @@
              @keyup.enter.native="onEnter('signInForm')"
              class="form-sign-in">
         <el-form-item>
-            <h1 class="main-title">登录 XXX</h1>
-            <h2 class="subtitle">开启智慧生活</h2>
+            <h1 class="main-title">登录</h1>
+            <h2 class="subtitle">XXX 后台管理系统</h2>
         </el-form-item>
         <el-form-item prop="id">
             <el-autocomplete placeholder="邮箱"
@@ -63,22 +63,40 @@ export default {
 					userAvatar({
 						id: this.data.id,
 						type: this.data.type,
-					}).then(data => {
-						this.avatar = true;
-						this.$emit('setAvatar', data);
-						this.vId = true;
-					});
+					})
+						.then(data => {
+							this.avatar = true;
+							this.$emit('setAvatar', data);
+							this.vId = true;
+						})
+						.catch(error => {
+							this.$message({
+								showClose: true,
+								center: true,
+								message: error.message,
+								type: 'error',
+							});
+						});
 					callback();
 				} else if (emailRegExp.test(this.data.id)) {
 					this.data.type = 'email';
 					userAvatar({
 						id: this.data.id,
 						type: this.data.type,
-					}).then(data => {
-						this.avatar = true;
-						this.$emit('setAvatar', data.avatar);
-						this.vId = true;
-					});
+					})
+						.then(data => {
+							this.avatar = true;
+							this.$emit('setAvatar', data.avatar);
+							this.vId = true;
+						})
+						.catch(error => {
+							this.$message({
+								showClose: true,
+								center: true,
+								message: error.message,
+								type: 'error',
+							});
+						});
 					callback();
 				}
 				this.vId = false;
@@ -118,6 +136,7 @@ export default {
 		};
 	},
 	methods: {
+		// 输入联想
 		querySearch(queryString, callback) {
 			let [restaurants, results, email] = [[], [], ''];
 			if (queryString.includes('@') && !queryString.startsWith('@')) {
@@ -138,6 +157,7 @@ export default {
 				return restaurant.value.includes(queryString);
 			};
 		},
+		// 提交表单
 		onSubmit(formName) {
 			this.$refs[formName].validate(valid => {
 				if (!valid) {

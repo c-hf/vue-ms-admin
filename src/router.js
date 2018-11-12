@@ -22,20 +22,37 @@ export default new Router({
 			component: () => import('./views/sign'), // 登录与注册,
 		},
 		{
-			path: '/message',
-			name: 'message',
-			meta: {
-				requireAuth: true,
-			},
-			component: () => import('./views/message'), // 消息中心
-		},
-		{
 			path: '/user',
 			name: 'user',
 			meta: {
 				requireAuth: true,
 			},
-			component: () => import('./views/user'), // 用户中心
+			component: () => import('./views/user'), // 用户模块
+		},
+		{
+			path: '/device',
+			name: 'device',
+			meta: {
+				requireAuth: true,
+			},
+			component: () => import('./views/device'), // 设备模块
+			children: [
+				{
+					path: 'classify',
+					name: 'classify',
+					component: () => import('./views/classify'), // 分类
+				},
+				{
+					path: 'param',
+					name: 'param',
+					component: () => import('./views/param'), // 参数
+				},
+				{
+					path: 'attr',
+					name: 'attr',
+					component: () => import('./views/attr'), // 属性
+				},
+			],
 		},
 		{
 			path: '/set',
@@ -46,24 +63,12 @@ export default new Router({
 			component: () => import('./views/set'), // 设置
 		},
 		{
-			path: '/device',
-			name: 'device',
+			path: '/message',
+			name: 'message',
 			meta: {
 				requireAuth: true,
 			},
-			component: () => import('./views/device'), // 设备
-			children: [
-				{
-					path: 'control',
-					name: 'control',
-					component: () => import('./views/control'), // 接入
-				},
-				{
-					path: 'access',
-					name: 'access',
-					component: () => import('./views/access'), // 新建
-				},
-			],
+			component: () => import('./views/message'), // 消息中心
 		},
 	],
 });
