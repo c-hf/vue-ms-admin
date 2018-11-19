@@ -9,17 +9,9 @@
             <el-col :span="8">
                 <el-card shadow="never"
                          class="param-data-card">
-                    <el-form ref="paramForm"
-                             :model="deviceData"
-                             label-position="left"
-                             label-width="100px">
-                        <el-form-item label="分类设备">
-                            <el-cascader :options="options"
-                                         :show-all-levels="true"
-                                         v-model="deviceData.id"
-                                         @change="change"></el-cascader>
-                        </el-form-item>
-                    </el-form>
+                    <category-data :deviceData="deviceData"
+                                   @change="setDeviceParam"
+                                   @setLoading="setLoading" />
                 </el-card>
                 <el-card shadow="never"
                          class="param-data-card">
@@ -36,82 +28,38 @@
             </el-col>
             <el-col :span="15"
                     :offset="1">
-                <el-table :data="deviceParam.param"
-                          highlight-current-row
-                          border
-                          style="width: 100%;">
-                    <el-table-column prop="id"
-                                     label="参数名称">
-                    </el-table-column>
-                    <el-table-column prop="name"
-                                     label="显示名称">
-                    </el-table-column>
-                    <el-table-column prop="value"
-                                     label="值">
-                    </el-table-column>
-                    <el-table-column prop="unit"
-                                     label="单位">
-                    </el-table-column>
-                    <el-table-column label="操作"
-                                     fixed="right">
-                        <template slot-scope="scope">
-                            <el-button type="text"
-                                       size="mini"
-                                       @click="compileData(scope.row)">
-                                Compile
-                            </el-button>
-                            <el-button type="text"
-                                       size="mini"
-                                       @click="deleteData(scope.row)">
-                                Delete
-                            </el-button>
-                        </template>
-                    </el-table-column>
-                </el-table>
-                <el-button plain
-                           @click="addData()">添加属性</el-button>
+                <device-table :device="deviceParam"
+                              :tableData="tableData"
+                              addDataBtn="添加参数"
+                              @compileData="compileData"
+                              @addData="addData"
+                              @deleteData="deleteData" />
             </el-col>
         </el-card>
-        <el-dialog :title="dialogTitle"
-                   center
-                   :visible.sync="dialogVisible"
-                   width="460px"
-                   :before-close="dialogClose">
-            <el-form ref="dialogForm"
-                     :model="dialogData"
-                     label-width="120px"
-                     label-position="left">
-                <el-form-item v-for="(item, index) in dialogData.dialogFormItems"
-                              :key="index"
-                              :prop="'dialogFormItems.' + index + '.value'"
-                              :rules="{required: true, message: '此项为必填项', trigger: 'blur'}"
-                              :label="item.name">
-                    <el-input placeholder=""
-                              :disabled="item.disable"
-                              v-model="item.value">
-                    </el-input>
-                </el-form-item>
-            </el-form>
-            <span slot="footer"
-                  class="dialog-footer">
-                <el-button @click="onCancel('dialogForm')">取 消</el-button>
-                <el-button type="primary"
-                           @click="dialogSubmit('dialogForm')">确 定</el-button>
-            </span>
-        </el-dialog>
+        <device-dialog :dialogTitle="dialogTitle"
+                       :dialogMethod="dialogMethod"
+                       :dialogMsg="dialogMsg"
+                       :dialogData="dialogData"
+                       :dialogVisible="dialogVisible"
+                       :methods="methods"
+                       :storageKey="storageKey"
+                       @getDataByHttp="getParamByHttp"
+                       @setDialogInit="setDialogInit"
+                       @setDialogVisible="setDialogVisible"
+                       @setLoading="setLoading" />
     </div>
 </template>
 
 <script>
 import {
-	DEVICE_DATA_KEY,
+	DATANAME,
+	TABLEDATA,
 	DEVICEPARAM_DATA_KEY,
 	CATEGORY_CONTENT_UPDATE_TIME_INTERVAL,
 } from './config.js';
 
 import {
 	setDeviceParam,
-	getDeviceCategoryInfo,
 	getDeviceParam,
 	updateDeviceParam,
 	deleteDeviceParam,
@@ -120,17 +68,27 @@ import {
 import storage from '@/assets/js/storage';
 import deviceOperation from '@/assets/js/deviceOperation';
 
+import DeviceTable from '@/components/deviceTable';
+import CategoryData from '@/components/categoryData';
+import DeviceDialog from '@/components/deviceDialog';
+
 export default {
 	name: 'DeviceParam', // 设备参数
 	data() {
 		return {
 			loading: false,
+			dataName: DATANAME,
+			tableData: TABLEDATA,
+			methods: {
+				setDeviceParam: setDeviceParam,
+				updateDeviceParam: updateDeviceParam,
+			},
 			paramAggregate: [],
-			deviceParam: { categoryItemId: '', param: [] },
+			deviceParam: { categoryItemId: '', data: [] },
 			deviceData: {
 				id: ['power', 'socket'],
 			},
-			options: [],
+			storageKey: DEVICEPARAM_DATA_KEY,
 			dialogData: { dialogFormItems: [] },
 			dialogVisible: false,
 			dialogMethod: '',
@@ -139,39 +97,6 @@ export default {
 		};
 	},
 	methods: {
-		// 获取设备分类
-		getInfo() {
-			this.loading = true;
-			let [id, deviceContents = {}, updateTime] = [
-				storage.get('id'),
-				storage.get(DEVICE_DATA_KEY),
-				0,
-			];
-
-			const curTime = new Date().getTime(); // 获取当前时间
-
-			if (deviceContents && deviceContents[id]) {
-				updateTime = deviceContents[id].updateTime;
-
-				if (
-					curTime - updateTime <=
-					CATEGORY_CONTENT_UPDATE_TIME_INTERVAL
-				) {
-					// localstorage
-					this.options = deviceOperation.setOptions(
-						deviceContents[id].data
-					);
-					this.loading = false;
-				} else {
-					// HTTP
-					this.getInfoByHttp(id, deviceContents, curTime);
-				}
-			} else {
-				// HTTP
-				this.getInfoByHttp(id, deviceContents, curTime);
-			}
-		},
-
 		// 获取设备参数
 		getParam() {
 			this.loading = true;
@@ -192,7 +117,7 @@ export default {
 				) {
 					// localstorage
 					this.paramAggregate = paramContents[id].data;
-					this.change();
+					this.setDeviceParam(this.deviceData.id);
 					this.loading = false;
 				} else {
 					// HTTP
@@ -202,33 +127,6 @@ export default {
 				// HTTP
 				this.getParamByHttp(id, paramContents, curTime);
 			}
-		},
-
-		// http获取设备分类
-		getInfoByHttp(id, contents, updateTime) {
-			getDeviceCategoryInfo()
-				.then(resData => {
-					if (resData !== 'ok') {
-						deviceOperation.updateLocalStorage({
-							id: id,
-							data: resData,
-							contents: contents,
-							curTime: updateTime,
-							key: DEVICE_DATA_KEY,
-						});
-						this.options = deviceOperation.setOptions(resData);
-						this.loading = false;
-					}
-				})
-				.catch(error => {
-					this.$message({
-						showClose: true,
-						center: true,
-						message: error.message,
-						type: 'error',
-					});
-					this.loading = false;
-				});
 		},
 
 		// http获取设备参数
@@ -244,7 +142,7 @@ export default {
 							key: DEVICEPARAM_DATA_KEY,
 						});
 						this.paramAggregate = resData;
-						this.change();
+						this.setDeviceParam(this.deviceData.id);
 						this.loading = false;
 					}
 				})
@@ -260,28 +158,46 @@ export default {
 		},
 
 		// 选择
-		change() {
+		setDeviceParam(id) {
 			this.paramAggregate.forEach(el => {
-				if (el.categoryItemId === this.deviceData.id[1]) {
-					this.deviceParam = el;
+				if (el.categoryItemId === id[1]) {
+					this.deviceParam.categoryItemId = el.categoryItemId;
+					this.deviceParam.data = el.param;
 				}
 			});
 		},
 
 		// 编辑
-		compileData(data) {
-			console.log(data);
+		compileData(data, categoryItemId) {
+			this.dialogData = deviceOperation.setDialogItems(
+				{
+					categoryItemId: categoryItemId,
+					id: data.id,
+					name: data.name,
+					value: data.value,
+					unit: data.unit,
+				},
+				this.dataName
+			);
+			this.dialogData.dialogFormItems[1].disable = true;
+			this.dialogMethod = 'updateDeviceParam';
+			this.dialogMsg = '修改成功！';
+			this.dialogTitle = '修改';
+			this.dialogVisible = true;
 		},
 
 		// 添加
 		addData() {
-			this.setDialogItems({
-				categoryItemId: this.deviceData.id[1],
-				id: '',
-				name: '',
-				value: '',
-				unit: '',
-			});
+			this.dialogData = deviceOperation.setDialogItems(
+				{
+					categoryItemId: this.deviceData.id[1],
+					id: '',
+					name: '',
+					value: '',
+					unit: '',
+				},
+				this.dataName
+			);
 			this.dialogMethod = 'setDeviceParam';
 			this.dialogMsg = '添加成功！';
 			this.dialogTitle = '添加';
@@ -290,120 +206,23 @@ export default {
 
 		// 删除
 		deleteData(data) {
-			this.$confirm(`是否删除 ${data.id} - ${data.name} ?`, '提示', {
-				confirmButtonText: '确定',
-				cancelButtonText: '取消',
-				type: 'warning',
-			})
-				.then(() => {
-					data = {
-						categoryItemId: this.deviceParam.categoryItemId,
-						id: data.id,
-					};
-					this.dbOperation('deleteDeviceParam', data, '删除成功！');
-				})
-				.catch(() => {
-					this.$message({
-						showClose: true,
-						center: true,
-						type: 'info',
-						message: '已取消删除',
-					});
-				});
-		},
-
-		// 提交
-		dialogSubmit(formName) {
-			this.$refs[formName].validate(valid => {
-				if (!valid) {
-					return false;
-				}
-				let data = this.setData();
-				this.dbOperation(this.dialogMethod, data, this.dialogMsg).then(
-					() => {
-						this.dialogVisible = false;
-						this.dialogMsg = '';
-						this.dialogMethod = '';
-						this.$refs[formName].resetFields();
-					}
-				);
-			});
-		},
-
-		// 取消
-		onCancel(formName) {
-			this.$refs[formName].resetFields();
-			this.dialogVisible = false;
-		},
-
-		// 关闭
-		dialogClose(done) {
-			this.$confirm('确认关闭？')
-				.then(_ => {
-					if (_) {
-						this.$refs.dialogForm.resetFields();
-						done();
-					}
-				})
-				.catch(error => {
-					if (error) {
-						return false;
-					}
-				});
-		},
-
-		// DialogItem
-		setDialogItems(data) {
-			const dataName = {
-				categoryItemId: '分类设备 ID',
-				id: '参数名称',
-				name: '显示名称',
-				value: '值',
-				unit: '单位',
-			};
-			this.dialogData = { dialogFormItems: [] };
-			for (let key of Object.keys(data)) {
-				let item = {};
-				if (dataName[key]) {
-					item.id = key;
-					item.name = dataName[key];
-					item.value = data[key];
-					item.id === 'categoryItemId'
-						? (item.disable = true)
-						: (item.disable = false);
-					this.dialogData.dialogFormItems.push(item);
-				}
-			}
-		},
-
-		// 数据库操作
-		dbOperation(method, data, msg) {
-			const methods = {
-				setDeviceParam: setDeviceParam,
-				updateDeviceParam: updateDeviceParam,
-				deleteDeviceParam: deleteDeviceParam,
-			};
 			this.loading = true;
-			return methods[method](data)
-				.then(resData => {
-					if (!resData) {
-						return;
-					}
+			deleteDeviceParam(data)
+				.then(() => {
 					this.$message({
 						showClose: true,
 						center: true,
-						message: msg,
+						message: '删除成功！',
 						type: 'success',
 					});
-					let [contents = {}, id] = [
-						storage.get(DEVICEPARAM_DATA_KEY),
+					const [contents = {}, id, curTime] = [
+						storage.get(this.storageKey),
 						storage.get('id'),
+						new Date().getTime(),
 					];
-					const curTime = new Date().getTime(); // 获取当前时间
 					this.getParamByHttp(id, contents, curTime);
 				})
 				.catch(error => {
-					console.log(error);
 					this.$message({
 						showClose: true,
 						center: true,
@@ -414,23 +233,29 @@ export default {
 				});
 		},
 
-		// data
-		setData() {
-			let data = {
-				param: {},
-			};
-			this.dialogData.dialogFormItems.forEach(el => {
-				if (el.id === 'categoryItemId') {
-					data[el.id] = el.value;
-				} else {
-					data.param[el.id] = el.value;
-				}
-			});
-			return data;
+		// dialog初始化
+		setDialogInit() {
+			this.dialogVisible = false;
+			this.dialogMsg = '';
+			this.dialogMethod = '';
+		},
+
+		// 设置 DialogVisible
+		setDialogVisible(value) {
+			this.dialogVisible = value;
+		},
+
+		// loading
+		setLoading(load) {
+			this.loading = load;
 		},
 	},
+	components: {
+		CategoryData,
+		DeviceTable,
+		DeviceDialog,
+	},
 	created() {
-		this.getInfo();
 		this.getParam();
 	},
 };

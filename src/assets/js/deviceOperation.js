@@ -28,4 +28,20 @@ export default {
 		});
 		return options;
 	},
+	setDialogItems(data, dataName) {
+		let dialogData = { dialogFormItems: [] };
+		for (let key of Object.keys(data)) {
+			let item = {};
+			if (dataName[key]) {
+				item.id = key;
+				item.name = dataName[key];
+				item.value = data[key];
+				item.id === 'categoryItemId'
+					? (item.disable = true)
+					: (item.disable = false);
+				dialogData.dialogFormItems.push(item);
+			}
+		}
+		return dialogData;
+	},
 };

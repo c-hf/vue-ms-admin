@@ -63,8 +63,8 @@ axios.interceptors.response.use(
 			router.replace({
 				name: 'sign',
 			});
-			return Promise.resolve({
-				data: 'ok',
+			return Promise.reject({
+				message: '授权已过期，请重新登录',
 			});
 		}
 		return Promise.reject(error);
