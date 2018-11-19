@@ -5,14 +5,16 @@
              status-icon
              label-width="0"
              label-position="left"
-             @keyup.enter.native="onEnter('signInForm')"
-             class="form-sign-in">
+             class="form-sign-in"
+             @keyup.enter.native="onEnter('signInForm')">
         <el-form-item>
             <h1 class="main-title">登录</h1>
             <h2 class="subtitle">XXX 后台管理系统</h2>
         </el-form-item>
         <el-form-item prop="id">
             <el-autocomplete placeholder="邮箱"
+                             :autofocus="true"
+                             autocomplete="off"
                              :fetch-suggestions="querySearch"
                              :trigger-on-focus="false"
                              v-model="data.id">
@@ -21,6 +23,7 @@
         <el-form-item prop="password">
             <el-input placeholder="密码"
                       type="password"
+                      autocomplete="off"
                       v-model="data.password">
             </el-input>
         </el-form-item>

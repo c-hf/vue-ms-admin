@@ -15,9 +15,19 @@ export const setDeviceCategory = data => {
 	return axiosFn(options);
 };
 // 添加设备参数
-
+export const setDeviceParam = data => {
+	options.method = 'post';
+	options.url = '/api/device/setDeviceParam';
+	options.data = data;
+	return axiosFn(options);
+};
 // 添加设备属性
-
+export const setDeviceAttr = data => {
+	options.method = 'post';
+	options.url = '/api/device/setDeviceAttr';
+	options.data = data;
+	return axiosFn(options);
+};
 // 添加设备
 
 // 更新分类
@@ -32,6 +42,22 @@ export const updateDeviceCategory = data => {
 export const updateDeviceCategoryItem = data => {
 	options.method = 'put';
 	options.url = '/api/device/updateDeviceCategoryItem';
+	options.data = data;
+	return axiosFn(options);
+};
+
+// 更新设备参数
+export const updateDeviceParam = data => {
+	options.method = 'put';
+	options.url = '/api/device/updateDeviceParam';
+	options.data = data;
+	return axiosFn(options);
+};
+
+// 更新设备属性
+export const updateDeviceAttr = data => {
+	options.method = 'put';
+	options.url = '/api/device/updateDeviceAttr';
 	options.data = data;
 	return axiosFn(options);
 };
@@ -61,10 +87,51 @@ export const deleteDeviceCategoryItem = id => {
 	return axiosFn(deleteOptions);
 };
 
+// 删除参数
+export const deleteDeviceParam = data => {
+	const deleteOptions = {
+		method: 'delete',
+		url: '/api/device/deleteDeviceParam',
+		params: {
+			categoryItemId: data.categoryItemId,
+			id: data.id,
+		},
+	};
+
+	return axiosFn(deleteOptions);
+};
+
+// 删除属性
+export const deleteDeviceAttr = data => {
+	const deleteOptions = {
+		method: 'delete',
+		url: '/api/device/deleteDeviceAttr',
+		params: {
+			categoryItemId: data.categoryItemId,
+			id: data.id,
+		},
+	};
+
+	return axiosFn(deleteOptions);
+};
 // 获取分类与分类设备信息
 export const getDeviceCategoryInfo = () => {
 	options.method = 'get';
 	options.url = '/api/device/getDeviceCategoryInfo';
+	return axiosFn(options);
+};
+
+// 获取设备参数
+export const getDeviceParam = () => {
+	options.method = 'get';
+	options.url = '/api/device/getDeviceParam';
+	return axiosFn(options);
+};
+
+// 获取设备属性
+export const getDeviceAttr = () => {
+	options.method = 'get';
+	options.url = '/api/device/getDeviceAttr';
 	return axiosFn(options);
 };
 
