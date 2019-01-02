@@ -1,33 +1,48 @@
 <template>
-    <div class="home">
-        <el-row>
+    <el-card class="home"
+             shadow="never">
+        <el-row :gutter="24">
             <el-col :span="24">
-                <el-card :body-style="{display: 'flex','justify-content': 'space-between','align-items': 'center'}">
+                <el-card :body-style="{display: 'flex',
+                'justify-content': 'space-between',
+                'align-items': 'center'}">
                     <div class="card-item on-line-device">
-                        <span class="card-item-title">在线设备</span>
-                        <span class="device-num">{{ onLineDeviceNum }}<i>台</i></span>
+                        <span class="card-item-title">
+                            在线设备
+                        </span>
+                        <span class="device-num">
+                            {{ onLineDeviceNum }}
+                            <i>台</i>
+                        </span>
                     </div>
                     <div class="card-item line-device">
-                        <span class="card-item-title">离线设备</span>
-                        <span class="device-num">{{ lineDeviceNum }}<i>台</i></span>
+                        <span class="card-item-title">
+                            离线设备
+                        </span>
+                        <span class="device-num">
+                            {{ lineDeviceNum }}
+                            <i>台</i>
+                        </span>
                     </div>
                     <div class="card-item device-info">
-                        <span class="card-item-title">信息概览</span>
+                        <span class="card-item-title">
+                            信息概览
+                        </span>
                         <span class="info device-info-num">
-                            <i class="fa fa-briefcase fa-fw"></i>
-                            &nbsp;设备总数:
-                            <i class="num">{{ TotalNum }}</i>
+                            设备总数:
+                            <i class="num">
+                                {{ TotalNum }}
+                            </i>
                         </span>
                         <span class="info device-info-warning">
-                            <i class="fa fa-bullhorn fa-fw"></i>
-                            &nbsp;告警信息:
+                            告警信息:
                             <i>0</i>
                         </span>
                     </div>
                 </el-card>
             </el-col>
         </el-row>
-    </div>
+    </el-card>
 </template>
 
 <script>
@@ -46,6 +61,8 @@ export default {
 
 <style lang="scss" scoped>
 .home {
+	background-color: inherit;
+
 	.card-item {
 		width: 30%;
 		height: 160px;
@@ -65,10 +82,6 @@ export default {
 
 	.on-line-device,
 	.line-device {
-		// flex-direction: column;
-		// justify-content: space-around;
-		// align-items: flex-start;
-
 		.card-item-title {
 			margin-left: 10px;
 			position: relative;

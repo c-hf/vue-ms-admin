@@ -1,6 +1,5 @@
 <template>
     <div class="device">
-        Device
         <router-view />
     </div>
 </template>
@@ -17,7 +16,6 @@ export default {
 <style lang="scss" scoped>
 .device {
 	width: 100%;
-	height: 100%;
 	position: relative;
 }
 </style>

@@ -2,7 +2,8 @@
     <transition name="el-fade-in-linear">
         <el-row class="sign">
             <el-col :span="24">
-                <el-card class="box-card">
+                <el-card class="sign-card"
+                         v-loading="loading">
                     <transition name="el-zoom-in-center">
                         <el-col :span="8"
                                 class="left"
@@ -29,10 +30,11 @@
                                 v-show="show">
                             <sign-up v-if="sign"
                                      @toggleSign="toggleSign"
-                                     @setSign="toggleSign" />
+                                     @setLoad="setLoad" />
                             <sign-in v-else
                                      @toggleSign="toggleSign"
-                                     @setAvatar="setAvatar" />
+                                     @setAvatar="setAvatar"
+                                     @setLoad="setLoad" />
                         </el-col>
                     </transition>
                 </el-card>
@@ -44,26 +46,30 @@
 <script>
 import SignUp from './signUp';
 import SignIn from './signIn';
+import { getUserInfo } from '@/api/user';
+
+import avatar from '@//assets/img/avatar/avatar.jpg';
 
 export default {
 	name: 'signUpAndIn',
 	data() {
 		return {
+			loading: false,
 			show: true,
 			title: 'SignIn',
 			subtitle: 'Start a smart life',
-			avatar: 'http://localhost:3000/static/avatar/0.jpg',
+			avatar: avatar,
 			sign: false,
 		};
 	},
-	components: {
-		SignUp,
-		SignIn,
-	},
+
 	methods: {
+		// 获取头像
 		setAvatar(avatar) {
 			this.avatar = avatar || 'http://localhost:3000/static/avatar/0.jpg';
 		},
+
+		// 切换登录/注册页
 		toggleSign() {
 			this.show = false;
 			setTimeout(() => {
@@ -74,6 +80,39 @@ export default {
 				this.show = true;
 			}, 300);
 		},
+
+		// loading
+		setLoad(value) {
+			this.loading = value;
+		},
+
+		// 获取 UserInfo
+		getUserInfoFn() {
+			this.loading = true;
+			getUserInfo()
+				.then(resData => {
+					this.$store.dispatch('user', resData);
+					this.loading = false;
+					if (!resData.groupId) {
+						this.$router.push({ name: 'information' });
+					}
+					this.$router.push({ name: 'home' });
+				})
+				.catch(error => {
+					this.loading = false;
+					this.$message({
+						showClose: true,
+						center: true,
+						message: error.message,
+						type: 'error',
+					});
+				});
+		},
+	},
+
+	components: {
+		SignUp,
+		SignIn,
 	},
 };
 </script>
@@ -82,7 +121,7 @@ export default {
 .sign {
 	width: 100%;
 	height: 100%;
-	min-width: 768px;
+	min-width: 1024px;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -97,6 +136,7 @@ export default {
 	.el-card {
 		width: 60%;
 		height: 80%;
+		min-width: 800px;
 		margin: auto;
 
 		.el-card__body {

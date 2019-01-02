@@ -7,6 +7,7 @@ export const setDeviceCategoryItem = data => {
 	options.data = data;
 	return axiosFn(options);
 };
+
 // 添加分类项
 export const setDeviceCategory = data => {
 	options.method = 'post';
@@ -14,21 +15,22 @@ export const setDeviceCategory = data => {
 	options.data = data;
 	return axiosFn(options);
 };
-// 添加设备参数
-export const setDeviceParam = data => {
-	options.method = 'post';
-	options.url = '/api/device/setDeviceParam';
-	options.data = data;
-	return axiosFn(options);
-};
-// 添加设备属性
-export const setDeviceAttr = data => {
-	options.method = 'post';
-	options.url = '/api/device/setDeviceAttr';
-	options.data = data;
-	return axiosFn(options);
-};
-// 添加设备
+
+// // 添加设备参数
+// export const setDeviceParam = data => {
+// 	options.method = 'post';
+// 	options.url = '/api/device/setDeviceParam';
+// 	options.data = data;
+// 	return axiosFn(options);
+// };
+
+// // 添加设备属性
+// export const setDeviceAttr = data => {
+// 	options.method = 'post';
+// 	options.url = '/api/device/setDeviceAttr';
+// 	options.data = data;
+// 	return axiosFn(options);
+// };
 
 // 更新分类
 export const updateDeviceCategory = data => {
@@ -114,24 +116,49 @@ export const deleteDeviceAttr = data => {
 
 	return axiosFn(deleteOptions);
 };
-// 获取分类与分类设备信息
-export const getDeviceCategoryInfo = () => {
+
+// 获取所有分类与分类设备信息
+export const getAllDeviceCategory = () => {
 	options.method = 'get';
-	options.url = '/api/device/getDeviceCategoryInfo';
+	options.url = '/api/device/getAllDeviceCategory';
 	return axiosFn(options);
 };
 
+// 获取分类与分类设备
+export const getDeviceCategoryById = categoryId => {
+	const getOptions = {
+		method: 'get',
+		url: '/api/device/getDeviceCategoryById',
+		params: {
+			categoryId: categoryId,
+		},
+	};
+	return axiosFn(getOptions);
+};
+
+// 获取设备参数与属性
+export const getDeviceParamAndAttrById = categoryItemId => {
+	const getOptions = {
+		method: 'get',
+		url: '/api/device/getDeviceParamAndAttrById',
+		params: {
+			categoryItemId: categoryItemId,
+		},
+	};
+	return axiosFn(getOptions);
+};
+
 // 获取设备参数
-export const getDeviceParam = () => {
+export const getAllDeviceParam = () => {
 	options.method = 'get';
-	options.url = '/api/device/getDeviceParam';
+	options.url = '/api/device/getAllDeviceParam';
 	return axiosFn(options);
 };
 
 // 获取设备属性
-export const getDeviceAttr = () => {
+export const getAllDeviceAttr = () => {
 	options.method = 'get';
-	options.url = '/api/device/getDeviceAttr';
+	options.url = '/api/device/getAllDeviceAttr';
 	return axiosFn(options);
 };
 

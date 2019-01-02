@@ -5,16 +5,14 @@
              status-icon
              label-width="0"
              label-position="left"
-             class="form-sign-in"
-             @keyup.enter.native="onEnter('signInForm')">
+             @keyup.enter.native="onEnter('signInForm')"
+             class="form-sign-in">
         <el-form-item>
-            <h1 class="main-title">登录</h1>
-            <h2 class="subtitle">XXX 后台管理系统</h2>
+            <h1 class="main-title">登录 XXX</h1>
+            <h2 class="subtitle">开启智慧生活</h2>
         </el-form-item>
         <el-form-item prop="id">
             <el-autocomplete placeholder="邮箱"
-                             :autofocus="true"
-                             autocomplete="off"
                              :fetch-suggestions="querySearch"
                              :trigger-on-focus="false"
                              v-model="data.id">
@@ -23,7 +21,6 @@
         <el-form-item prop="password">
             <el-input placeholder="密码"
                       type="password"
-                      autocomplete="off"
                       v-model="data.password">
             </el-input>
         </el-form-item>
@@ -44,13 +41,14 @@
 </template>
 
 <script>
-import { signIn, userAvatar } from '@/api/user';
+import { signIn, getUserAvatar } from '@/api/user';
 import { EMAIL_SUFFIX } from './config';
 import storage from '@/assets/js/storage';
 
 export default {
 	name: 'SignIn',
 	data() {
+		// id 验证
 		const validateId = (rule, value, callback) => {
 			const [phoneRegExp, emailRegExp] = [
 				/^1[0-9]{10}$/,
@@ -63,49 +61,20 @@ export default {
 				// this.showCode = true;
 				if (phoneRegExp.test(this.data.id)) {
 					this.data.type = 'phone';
-					userAvatar({
-						id: this.data.id,
-						type: this.data.type,
-					})
-						.then(data => {
-							this.avatar = true;
-							this.$emit('setAvatar', data);
-							this.vId = true;
-						})
-						.catch(error => {
-							this.$message({
-								showClose: true,
-								center: true,
-								message: error.message,
-								type: 'error',
-							});
-						});
+					this.getUserAvatarFn();
 					callback();
+					return;
 				} else if (emailRegExp.test(this.data.id)) {
 					this.data.type = 'email';
-					userAvatar({
-						id: this.data.id,
-						type: this.data.type,
-					})
-						.then(data => {
-							this.avatar = true;
-							this.$emit('setAvatar', data.avatar);
-							this.vId = true;
-						})
-						.catch(error => {
-							this.$message({
-								showClose: true,
-								center: true,
-								message: error.message,
-								type: 'error',
-							});
-						});
+					this.getUserAvatarFn();
 					callback();
+					return;
 				}
 				this.vId = false;
 				callback(new Error('请输入正确的邮箱'));
 			}
 		};
+		// 密码验证
 		const validatePassWord = (rule, value, callback) => {
 			const nameRegExp = /^\S{6,16}$/;
 			if (!value) {
@@ -113,7 +82,7 @@ export default {
 			} else {
 				nameRegExp.test(this.data.password)
 					? callback()
-					: callback(new Error('密码为 6 - 16 位，不支持空格'));
+					: callback(new Error('密码为 6 - 16 位'));
 			}
 		};
 		return {
@@ -139,7 +108,7 @@ export default {
 		};
 	},
 	methods: {
-		// 输入联想
+		// 输入建议
 		querySearch(queryString, callback) {
 			let [restaurants, results, email] = [[], [], ''];
 			if (queryString.includes('@') && !queryString.startsWith('@')) {
@@ -155,49 +124,83 @@ export default {
 			// 调用 callback 返回建议列表的数据
 			callback(results);
 		},
+
 		createFilter(queryString) {
 			return restaurant => {
 				return restaurant.value.includes(queryString);
 			};
 		},
-		// 提交表单
+
+		// 提交
 		onSubmit(formName) {
 			this.$refs[formName].validate(valid => {
 				if (!valid) {
 					return false;
 				}
-				signIn(this.data)
-					.then(data => {
-						storage.set('token', data.token);
-						storage.set('id', data.emailId);
-						this.$store.dispatch('token', data.token);
-						this.$store.dispatch('user', data.userInfo);
-						this.$message({
-							showClose: true,
-							center: true,
-							message: '登录成功',
-							type: 'success',
-						});
-						this.$router.push({ name: 'home' });
-					})
-					.catch(error => {
-						this.$message({
-							showClose: true,
-							center: true,
-							message: error.message,
-							type: 'error',
-						});
-					});
+				this.signInFn();
 			});
 		},
+
+		// keyup.enter
 		onEnter(formName) {
 			if (!this.vId) {
 				return false;
 			}
 			this.onSubmit(formName);
 		},
+
+		// 注册页
 		signUp() {
 			this.$emit('toggleSign');
+		},
+
+		// getUserAvatar 封装
+		getUserAvatarFn() {
+			getUserAvatar({
+				id: this.data.id,
+				type: this.data.type,
+			})
+				.then(resData => {
+					this.avatar = true;
+					this.$emit('setAvatar', resData.avatar);
+					this.vId = true;
+				})
+				.catch(error => {
+					this.$message({
+						showClose: true,
+						center: true,
+						message: error.message,
+						type: 'error',
+					});
+				});
+		},
+
+		// signIn 方法封装
+		signInFn() {
+			this.$emit('setLoad', true);
+			signIn(this.data)
+				.then(resData => {
+					storage.set('token', resData.token);
+					this.$store.dispatch('token', resData.token);
+					this.$store.dispatch('user', resData.userInfo);
+					this.$emit('setLoad', false);
+					this.$message({
+						showClose: true,
+						center: true,
+						message: '登录成功',
+						type: 'success',
+					});
+					this.$router.push({ name: 'home' });
+				})
+				.catch(error => {
+					this.$emit('setLoad', false);
+					this.$message({
+						showClose: true,
+						center: true,
+						message: error.message,
+						type: 'error',
+					});
+				});
 		},
 	},
 };
@@ -206,7 +209,9 @@ export default {
 <style lang="scss">
 .form-sign-in {
 	width: 100%;
+	height: 100%;
 	padding-top: 12%;
+	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
 	align-items: center;

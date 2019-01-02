@@ -7,21 +7,48 @@ import axios from 'axios';
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 
-import 'font-awesome/css/font-awesome.min.css';
 import './assets/scss/index.scss';
 
+import SvgIcon from '@/components/svgIcon';
 import storage from '@/assets/js/storage';
+import { baseURL } from '../src/config';
+import { getUserInfo } from '@/api/user';
 
 Vue.config.productionTip = false;
-
 Vue.use(ElementUI);
 
+Vue.component('svg-icon', SvgIcon);
+
+// 路由守卫
 router.beforeEach((to, from, next) => {
+	if (to.fullPath === '/') {
+		next({
+			path: '/home',
+		});
+	}
+
 	if (to.meta.requireAuth) {
 		if (!store.state.token) {
 			next({
 				path: '/sign',
 			});
+		} else if (!store.state.user.userId) {
+			getUserInfo()
+				.then(resData => {
+					store.dispatch('user', resData);
+					next();
+				})
+				.catch(error => {
+					ElementUI.Message({
+						showClose: true,
+						center: true,
+						message: error.message,
+						type: 'error',
+					});
+					next({
+						path: '/sign',
+					});
+				});
 		} else {
 			next();
 		}
@@ -38,15 +65,19 @@ router.beforeEach((to, from, next) => {
 // 	console.log(from);
 // });
 
+// axios 全局默认设置
+axios.defaults.baseURL = baseURL;
+axios.defaults.headers.post['Content-Type'] = 'application/json';
+
 // http request 拦截器
 axios.interceptors.request.use(
-	function(config) {
+	config => {
 		if (store.state.token) {
 			config.headers.Authorization = `Bearer ${store.state.token}`;
 		}
 		return config;
 	},
-	function(error) {
+	error => {
 		return Promise.reject(error);
 	}
 );
@@ -54,12 +85,17 @@ axios.interceptors.request.use(
 // http response 拦截器
 axios.interceptors.response.use(
 	response => {
+		if (response.data.token) {
+			store.dispatch('token', response.data.token);
+			storage.set('token', response.data.token);
+		}
 		return response;
 	},
 	error => {
 		if (error.response.status === 401) {
 			storage.remove('token');
 			store.dispatch('token', '');
+			store.dispatch('user', {});
 			router.replace({
 				name: 'sign',
 			});
@@ -70,10 +106,6 @@ axios.interceptors.response.use(
 		return Promise.reject(error);
 	}
 );
-
-// axios 全局默认设置
-axios.defaults.baseURL = 'http://localhost:3000';
-axios.defaults.headers.post['Content-Type'] = 'application/json';
 
 new Vue({
 	router,

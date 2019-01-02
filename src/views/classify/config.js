@@ -1,3 +1,14 @@
-const suffix = 'key';
-export const DEVICE_DATA_KEY = `device-content-${suffix}`;
-export const CATEGORY_CONTENT_UPDATE_TIME_INTERVAL = 1 * 24 * 60 * 60 * 1000; // 过期时间
+export const TABLE = [
+	{
+		prop: 'categoryId',
+		label: '分类 ID',
+	},
+	{
+		prop: 'categoryItemId',
+		label: '分类设备 ID',
+	},
+	{
+		prop: 'name',
+		label: '名称',
+	},
+];

@@ -60,6 +60,7 @@
 <script>
 import { signUp, signSendCode } from '@/api/user';
 import { EMAIL_SUFFIX } from './config';
+import storage from '@/assets/js/storage';
 
 export default {
 	name: 'SignUp',
@@ -74,6 +75,7 @@ export default {
 				if (nameRegExp.test(this.data.name)) {
 					this.vNickName = true;
 					callback();
+					return;
 				}
 				this.vNickName = false;
 				callback(
@@ -81,6 +83,7 @@ export default {
 				);
 			}
 		};
+
 		// 注册账号验证
 		const validateId = (rule, value, callback) => {
 			const [phoneRegExp, emailRegExp] = [
@@ -95,15 +98,18 @@ export default {
 					this.data.type = 'phone';
 					this.vId = true;
 					callback();
+					return;
 				} else if (emailRegExp.test(this.data.id)) {
 					this.data.type = 'email';
 					this.vId = true;
 					callback();
+					return;
 				}
 				this.vId = false;
 				callback(new Error('请输入正确的邮箱'));
 			}
 		};
+
 		// 密码验证
 		const validatePassWord = (rule, value, callback) => {
 			const nameRegExp = /^\S{6,16}$/;
@@ -114,11 +120,13 @@ export default {
 				if (nameRegExp.test(this.data.password)) {
 					this.vPassWord = true;
 					callback();
+					return;
 				}
 				this.vPassWord = false;
 				callback(new Error('密码为 6 - 16 位，不支持空格'));
 			}
 		};
+
 		// 验证码
 		const validateCode = (rule, value, callback) => {
 			if (!value) {
@@ -178,7 +186,9 @@ export default {
 			timer: null,
 		};
 	},
+
 	methods: {
+		// 输入建议
 		querySearch(queryString, callback) {
 			let [restaurants, results, email] = [[], [], ''];
 			if (queryString.includes('@') && !queryString.startsWith('@')) {
@@ -199,19 +209,67 @@ export default {
 				return restaurant.value.includes(queryString);
 			};
 		},
+
+		// 发送验证码
 		sendCode() {
+			if (!this.vId) {
+				return false;
+			}
 			const data = {
 				type: this.data.type,
 				id: this.data.id,
 			};
 			this.sendCodeBtn = true;
 			this.sendCodeMsg = `重新发送 ${this.sendCodeNum}s`;
-
 			this.setCodeTime().then(() => {
 				this.sendCodeBtn = false;
 				this.sendCodeMsg = '重新发送';
 				this.sendCodeNum = 60;
 			});
+			this.signSendCodeFn(data);
+		},
+
+		// 提交
+		onSubmit(formName) {
+			this.$refs[formName].validate(valid => {
+				if (!valid) {
+					return false;
+				}
+				this.signUpFn();
+			});
+		},
+
+		// 登录页
+		signIn() {
+			this.$emit('toggleSign');
+		},
+
+		// 等待时间
+		setCodeTime() {
+			return new Promise(resolve => {
+				this.timer = setInterval(() => {
+					this.sendCodeNum -= 1;
+					this.sendCodeMsg = `重新发送 (${this.sendCodeNum}s)`;
+
+					if (this.sendCodeNum === 0) {
+						clearInterval(this.timer);
+						this.timer = null;
+						resolve();
+					}
+				}, 1000);
+			});
+		},
+
+		// keyup.enter
+		onEnter(formName) {
+			if (!this.vNickName || !this.vId || !this.vPassWord) {
+				return false;
+			}
+			this.onSubmit(formName);
+		},
+
+		// signSendCode 方法封装
+		signSendCodeFn(data) {
 			signSendCode(data)
 				.then(info => {
 					if (info) {
@@ -236,72 +294,56 @@ export default {
 						type: 'error',
 					});
 				});
-
-			return false;
 		},
 
-		onSubmit(formName) {
-			this.$refs[formName].validate(valid => {
-				if (!valid) {
-					return false;
-				}
-				this.signUpBtn = true;
-				signUp(this.data)
-					.then(data => {
-						if (data) {
-							this.$message({
-								showClose: true,
-								center: true,
-								message: '注册成功',
-								type: 'success',
-							});
-							this.$emit('setSign');
-						}
-					})
-					.catch(error => {
-						this.signUpBtn = false;
-						this.$message({
-							showClose: true,
-							center: true,
-							message: error.message,
-							type: 'error',
-						});
+		// signUp 方法封装
+		signUpFn() {
+			this.signUpBtn = true;
+			this.$emit('setLoad', true);
+			signUp(this.data)
+				.then(resData => {
+					storage.set('token', resData.token);
+					this.$store.dispatch('token', resData.token);
+					this.$store.dispatch('user', {
+						userId: resData.userInfo.userId,
+						nickName: resData.userInfo.nickName,
+						avatar: '',
+						birthday: '',
+						groupId: '',
+						intro: '',
+						sex: '',
 					});
-			});
-		},
-		signIn() {
-			this.$emit('toggleSign');
-		},
-		// 等待时间
-		setCodeTime() {
-			return new Promise(resolve => {
-				this.timer = setInterval(() => {
-					this.sendCodeNum -= 1;
-					this.sendCodeMsg = `重新发送 (${this.sendCodeNum}s)`;
 
-					if (this.sendCodeNum === 0) {
-						clearInterval(this.timer);
-						this.timer = null;
-						resolve();
-					}
-				}, 1000);
-			});
-		},
-		onEnter(formName) {
-			if (!this.vNickName || !this.vId || !this.vPassWord) {
-				return false;
-			}
-			this.onSubmit(formName);
+					this.$emit('setLoad', false);
+					this.$message({
+						showClose: true,
+						center: true,
+						message: '注册成功',
+						type: 'success',
+					});
+					this.$router.push({ name: 'information' });
+				})
+				.catch(error => {
+					this.signUpBtn = false;
+					this.$emit('setLoad', false);
+					this.$message({
+						showClose: true,
+						center: true,
+						message: error.message,
+						type: 'error',
+					});
+				});
 		},
 	},
-	mounted() {},
 };
 </script>
 
 <style lang="scss" >
 .form-sign-up {
 	width: 100%;
+	height: 100%;
 	padding-top: 12%;
+	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
 	align-items: center;

@@ -1,34 +1,29 @@
 <template>
-    <el-row class="header-content">
-        <el-col :md="4"
-                :sm="4"
-                :xs="4"
-                class="left">
-            <a class="left-menu-btn"
-               @click.stop="setCollapse">
-                <i class="fa fa-bars fa-fw"></i>
-            </a>
-            <h1 class="left-title">{{ title }}</h1>
-        </el-col>
-        <el-col :md="12"
-                :sm="10"
-                :xs="6"
-                class="center">
-            Logo
-        </el-col>
-        <el-col :md="8"
-                :sm="10"
-                :xs="14"
-                class="right">
-            <header-search></header-search>
+    <div class="header-content">
+        <div class="left">
+            <div class="left-logo"
+                 :style="{width: `${width}px`}">
+                Logo
+            </div>
+            <div class="left-menu">
+                <el-button type="text"
+                           :disabled="disabled"
+                           class="left-menu-btn"
+                           @click.stop="setCollapse">
+                    <svg-icon iconClass="icon-bars" />
+                </el-button>
+            </div>
+        </div>
+        <div class="right">
+            <header-search />
             <dir class="right-item">
                 <el-badge :value="promptBadge"
                           class="right-prompt">
-                    <i class="fa fa-bell-o"></i>
+                    <svg-icon iconClass="icon-remind" />
                 </el-badge>
                 <el-badge :value="emailBadge"
                           class="right-email">
-                    <i class="fa fa-envelope-o"></i>
+                    <svg-icon iconClass="icon-mail" />
                 </el-badge>
             </dir>
             <el-dropdown trigger="click"
@@ -41,33 +36,82 @@
                     </span>
                 </div>
                 <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item disabled>Welcome!</el-dropdown-item>
-                    <el-dropdown-item command="userInfo"><i class="fa fa-user fa-fw"></i>&nbsp;我的账号</el-dropdown-item>
-                    <el-dropdown-item><i class="fa fa-gear fa-fw"></i>&nbsp;设置</el-dropdown-item>
-                    <el-dropdown-item command="signOut"><i class="fa fa-sign-out fa-fw"></i>&nbsp;登出</el-dropdown-item>
+                    <el-dropdown-item disabled>
+                        Welcome!
+                    </el-dropdown-item>
+                    <el-dropdown-item command="userInfo">
+                        <svg-icon class="dropdown-icon"
+                                  iconClass="icon-people" />
+                        我的账号
+                    </el-dropdown-item>
+                    <el-dropdown-item>
+                        <svg-icon class=""
+                                  iconClass="icon-setup" />
+                        设置
+                    </el-dropdown-item>
+                    <el-dropdown-item command="signOut">
+                        <svg-icon class=""
+                                  iconClass="icon-signout" />
+                        登出
+                    </el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
-        </el-col>
-    </el-row>
+        </div>
+    </div>
 </template>
 
 <script>
 import HeaderSearch from './search';
-import { userInfo, signOut } from '@/api/user';
-import storage from '@/assets/js/storage';
+import { getUserInfo } from '@/api/user';
 
 export default {
 	name: 'Header',
 	data() {
 		return {};
 	},
-	props: {
-		title: {
-			type: String,
-			default: '首页',
+
+	methods: {
+		setCollapse() {
+			this.$emit('setCollapse');
 		},
+
+		handleCommand(command) {
+			if (command === 'signOut') {
+				this.$emit('signOut');
+			} else if (command === 'userInfo') {
+				this.getUserInfoFn();
+			}
+		},
+
+		// getUserInfo 封装
+		getUserInfoFn() {
+			getUserInfo()
+				.then(data => {
+					if (data) {
+						console.log(data);
+					}
+				})
+				.catch(error => {
+					this.$message({
+						showClose: true,
+						center: true,
+						message: error.message,
+						type: 'error',
+					});
+				});
+		},
+	},
+
+	components: {
+		HeaderSearch,
+	},
+
+	props: {
 		user: {
 			type: Object,
+		},
+		width: {
+			type: Number,
 		},
 		promptBadge: {
 			type: Number,
@@ -75,99 +119,63 @@ export default {
 		emailBadge: {
 			type: Number,
 		},
-	},
-	methods: {
-		setCollapse() {
-			this.$emit('setCollapse');
+		disabled: {
+			type: Boolean,
 		},
-		handleCommand(command) {
-			if (command === 'signOut') {
-				signOut()
-					.then(data => {
-						if (data === 'ok') {
-							storage.remove('token');
-							this.$store.dispatch('token', '');
-							this.$router.replace({
-								name: 'sign',
-							});
-						}
-					})
-					.catch(error => {
-						this.$message({
-							showClose: true,
-							center: true,
-							message: error.message,
-							type: 'error',
-						});
-					});
-			} else if (command === 'userInfo') {
-				userInfo()
-					.then(data => {
-						if (data) {
-							console.log(data);
-						}
-					})
-					.catch(error => {
-						this.$message({
-							showClose: true,
-							center: true,
-							message: error.message,
-							type: 'error',
-						});
-					});
-			}
-		},
-	},
-	components: {
-		HeaderSearch,
 	},
 };
 </script>
 
 <style lang="scss" scoped>
+@import '~@/assets/scss/mixins';
 .header-content {
+	width: 100%;
 	height: 100%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
+	@include flex-between();
 
 	.left,
-	.center,
 	.right {
 		height: 100%;
 		display: flex;
 		align-items: center;
+		box-sizing: border-box;
 	}
 
 	.left {
-		justify-content: flex-start;
-
-		&-menu-btn {
-			display: block;
-			color: #000;
-			margin: 0 20px;
-			cursor: pointer;
+		&-logo {
+			height: 100%;
+			transition: all 0.5s;
+			@include flex-center();
 		}
 
-		&-title {
-			user-select: none;
-			font-size: 16px;
-		}
-	}
+		&-menu {
+			height: 100%;
+			@include flex-center();
 
-	.center {
-		justify-content: center;
+			&-btn {
+				display: block;
+				color: #000;
+				margin: 0 20px;
+				cursor: pointer;
+				font-size: 18px;
+			}
+		}
 	}
 
 	.right {
+		width: 500px;
 		height: 100%;
-		justify-content: space-around;
+		padding-right: 20px;
 
 		.el-input {
 			flex: 5;
 			margin-right: 10px;
 		}
 
+		&-prompt,
+		&-email {
+			font-size: 20px;
+		}
 		&-item {
 			flex: 2;
 			display: flex;
@@ -180,9 +188,7 @@ export default {
 		}
 
 		&-user {
-			display: flex;
-			align-items: center;
-			justify-content: center;
+			@include flex-around();
 			cursor: pointer;
 
 			&-avatar {
@@ -190,7 +196,6 @@ export default {
 				width: 32px;
 				height: 32px;
 				border-radius: 50%;
-				// margin: 0 10px;
 
 				img {
 					width: 100%;

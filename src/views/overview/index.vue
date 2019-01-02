@@ -1,13 +1,14 @@
 <template>
-    <el-card class="message"
+    <el-card class="overview"
              shadow="never">
-        Message
+        Overview
     </el-card>
+
 </template>
 
 <script>
 export default {
-	name: 'Message',
+	name: 'Overview',
 	data() {
 		return {};
 	},
@@ -15,7 +16,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.message {
+.overview {
 	background-color: inherit;
 }
 </style>

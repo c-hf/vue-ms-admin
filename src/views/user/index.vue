@@ -1,7 +1,8 @@
 <template>
-    <div>
+    <el-card class="user"
+             shadow="never">
         User
-    </div>
+    </el-card>
 </template>
 
 <script>
@@ -14,4 +15,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.user {
+	background-color: inherit;
+}
 </style>

@@ -2,7 +2,7 @@ import storage from '@/assets/js/storage';
 
 export default {
 	// 更新本地缓存
-	updateLocalStorage: update => {
+	updateLocalStorage(update) {
 		update.contents = update.contents || {};
 		update.contents[update.id] = {};
 		update.contents[update.id].data = update.data;
@@ -28,6 +28,7 @@ export default {
 		});
 		return options;
 	},
+
 	setDialogItems(data, dataName) {
 		let dialogData = { dialogFormItems: [] };
 		for (let key of Object.keys(data)) {
