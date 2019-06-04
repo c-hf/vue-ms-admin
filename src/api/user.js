@@ -32,6 +32,15 @@ export const perfectInformation = data => {
 	return axiosFn(options);
 };
 
+// put
+// 更新用户信息
+export const updateUserInfo = data => {
+	options.method = 'put';
+	options.url = '/api/user/updateUserInfo';
+	options.data = data;
+	return axiosFn(options);
+};
+
 // 登出
 export const signOut = () => {
 	options.method = 'get';

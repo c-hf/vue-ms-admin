@@ -11,7 +11,7 @@ import './assets/scss/index.scss';
 
 import SvgIcon from '@/components/svgIcon';
 import storage from '@/assets/js/storage';
-import { baseURL } from '../src/config';
+import { BASEURL } from '../src/config';
 import { getUserInfo } from '@/api/user';
 
 Vue.config.productionTip = false;
@@ -66,7 +66,7 @@ router.beforeEach((to, from, next) => {
 // });
 
 // axios 全局默认设置
-axios.defaults.baseURL = baseURL;
+axios.defaults.baseURL = BASEURL;
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 
 // http request 拦截器

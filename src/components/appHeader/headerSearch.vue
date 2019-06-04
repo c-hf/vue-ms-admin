@@ -1,5 +1,5 @@
 <template>
-    <el-input class="app-search"
+    <el-input class="app-header-search"
               :placeholder="placeholder"
               suffix-icon="el-icon-search"
               v-model="searchInput">
@@ -8,7 +8,7 @@
 
 <script>
 export default {
-	name: 'HeaderSearch',
+	name: 'AppHeaderSearch',
 	data() {
 		return {
 			searchInput: '',

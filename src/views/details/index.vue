@@ -161,9 +161,6 @@ export default {
 
 <style lang="scss" scoped>
 .details {
-	width: 100%;
-	height: 100%;
-
 	&-card {
 		margin-bottom: 20px;
 

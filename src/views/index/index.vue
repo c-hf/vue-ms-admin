@@ -1,103 +1,120 @@
 <template>
     <el-container class="app-container"
-                  ref="app">
+                  v-loading="loading">
         <el-header class="app-header">
-            <app-header :user="user"
+            <app-header ref="appHeader"
+                        :user="user"
                         :width="width"
                         :disabled="setDisabled"
                         @setCollapse="setCollapse"
                         @signOut="signOut" />
         </el-header>
         <el-container class="app-content">
-            <el-aside :style="{width: `${width}px`}">
+            <el-aside class="app-aside"
+                      :style="{width: `${width}px`}">
                 <app-aside :isCollapse="isCollapse"
                            :user="user"
                            @signOut="signOut" />
             </el-aside>
-
-            <el-main class="app-main">
-                <div class="app-main-title">
-                    <span class="app-main-title-text">
-                        {{breadcrumb[breadcrumb.length-1].name}}
-                    </span>
-                    <el-breadcrumb separator-class="el-icon-arrow-right"
-                                   class="app-main-title-breadcrumb">
-                        <el-breadcrumb-item :to="{ path: '/home' }">
-                            智家
-                        </el-breadcrumb-item>
-                        <el-breadcrumb-item :to="{ path: item.path }"
-                                            v-for="(item, index) in breadcrumb"
-                                            :key="index">
-                            {{item.name}}
-                        </el-breadcrumb-item>
-                    </el-breadcrumb>
-                </div>
-                <router-view />
-            </el-main>
+            <el-scrollbar style="height:100%; width:100%;">
+                <el-main class="app-main">
+                    <div class="app-main-title">
+                        <span class="app-main-title-text">
+                            {{ breadcrumb.name }}
+                        </span>
+                        <el-breadcrumb separator-class="el-icon-arrow-right"
+                                       class="app-main-title-breadcrumb">
+                            <el-breadcrumb-item :to="{ path: '/home' }">
+                                智家管理员后台
+                            </el-breadcrumb-item>
+                            <el-breadcrumb-item :to="{ path: item.path }"
+                                                v-for="(item, index) in breadcrumb.data"
+                                                :key="index">
+                                {{ item.name }}
+                            </el-breadcrumb-item>
+                            <el-breadcrumb-item>
+                                {{ breadcrumb.name }}
+                            </el-breadcrumb-item>
+                        </el-breadcrumb>
+                    </div>
+                    <transition name="router"
+                                mode="out-in">
+                        <router-view class="app-main-content" />
+                    </transition>
+                </el-main>
+                <el-footer class="app-footer">
+                    Smart Home Admin &copy; 2019 chf
+                </el-footer>
+            </el-scrollbar>
         </el-container>
     </el-container>
 </template>
 <script>
-import AppHeader from '@/components/header';
-import AppAside from '@/components/aside';
+import AppHeader from '@/components/appHeader';
+import AppAside from '@/components/appAside';
+
 import storage from '@/assets/js/storage';
-// import io from 'socket.io-client';
 import { signOut } from '@/api/user';
-import { ROUTERS } from './config.js';
 
 export default {
 	name: 'Index',
 	data() {
 		return {
+			loading: false,
 			isCollapse: false,
 			setDisabled: false,
 			width: 220,
-			routers: ROUTERS,
 			timer: null,
-			// socket: io('http://localhost:3000', {
-			// 	query: {
-			// 		token: this.$store.state.token,
-			// 	},
-			// }),
 		};
 	},
+
 	computed: {
-		// 获取 User
 		user() {
 			return this.$store.state.user;
 		},
 
+		// 面包屑
 		breadcrumb() {
-			const path = this.$route.path.split('/');
+			const menuRouterList = {
+				home: { path: '/home', name: '首页' },
+				user: { path: '/user', name: '用户管理' },
+				family: { path: '/family', name: '家庭组管理' },
+				device: { path: '/device', name: '设备管理' },
+				overview: { path: '/device/overview', name: '概览' },
+				classify: { path: '/device/classify', name: '分类' },
+				set: { path: '/set', name: '设置' },
+			};
 
-			let paths = [];
-			path.forEach(el => {
-				const router = this.routers[el];
-				if (!router) {
-					return;
-				}
-				if (el === 'details') {
-					paths.push({
-						path: this.routers.classify.path,
-						name: this.routers.classify.name,
+			const path = this.$route.path.split('/');
+			let breadcrumb = {
+				name: '',
+				data: [],
+			};
+			path.forEach((el, index) => {
+				if (index === path.length - 1) {
+					menuRouterList[el]
+						? (breadcrumb.name = menuRouterList[el].name)
+						: (breadcrumb.name = this.$route.query.name);
+				} else if (menuRouterList[el]) {
+					breadcrumb.data.push({
+						path: menuRouterList[el].path,
+						name: menuRouterList[el].name,
 					});
 				}
-				paths.push({
-					path: router.path,
-					name: router.name,
-				});
 			});
-			return paths;
+			return breadcrumb;
 		},
 	},
 	methods: {
 		// 侧边栏折叠
 		setCollapse() {
 			if (this.isCollapse) {
+				this.$refs.appHeader.setCollapseIcon('icon-menu-unfold');
 				this.isCollapse = false;
 				this.width = 220;
 				return;
 			}
+			this.$refs.appHeader.setCollapseIcon('icon-menu-fold');
 			this.isCollapse = true;
 			this.width = 64;
 		},
@@ -107,19 +124,17 @@ export default {
 			this.signOutFn();
 		},
 
-		// signOut 封装
+		// 登出封装
 		signOutFn() {
+			this.loading = true;
 			signOut()
 				.then(resData => {
 					if (resData === 'ok') {
-						// this.socket.disconnect();
-						storage.remove('token');
-						this.$store.dispatch('token', '');
-						this.$store.dispatch('user', {});
-						// this.$store.dispatch('device', []);
 						this.$router.replace({
 							name: 'sign',
 						});
+						storage.remove('token');
+						this.$store.dispatch('token', '');
 					}
 				})
 				.catch(error => {
@@ -129,6 +144,9 @@ export default {
 						message: error.message,
 						type: 'error',
 					});
+				})
+				.then(() => {
+					this.loading = false;
 				});
 		},
 
@@ -138,15 +156,33 @@ export default {
 				this.setDisabled = true;
 				this.isCollapse = true;
 				this.width = 64;
+				this.$refs.appHeader.setCollapseIcon('icon-menu-fold');
 			} else {
 				this.setDisabled = false;
 				this.isCollapse = false;
 				this.width = 220;
+				this.$refs.appHeader.setCollapseIcon('icon-menu-unfold');
 			}
+		},
+
+		checkFull() {
+			let isFull =
+				window.fullScreen ||
+				document.webkitIsFullScreen ||
+				document.mozIsFullScreen ||
+				document.msFullscreenEnabled;
+
+			if (isFull === undefined) {
+				isFull = false;
+			}
+			return isFull;
 		},
 
 		// resize 监听回调
 		onResize() {
+			if (!this.checkFull()) {
+				this.$refs.appHeader.setFullScreenIcon(false);
+			}
 			if (this.timer) {
 				clearInterval(this.timer);
 			}
@@ -162,55 +198,6 @@ export default {
 		AppAside,
 	},
 
-	// created() {
-	// 	// 连接
-	// 	this.socket.on('connect', () => {
-	// 		console.log('connect');
-	// 	});
-
-	// 	// 断开连接
-	// 	this.socket.on('disconnect', () => {
-	// 		console.log('disconnect');
-	// 	});
-
-	// 	// 重连
-	// 	this.socket.on('reconnect', attemptNumber => {
-	// 		console.log(attemptNumber);
-	// 	});
-
-	// 	// 连接错误
-	// 	this.socket.on('connect_error', error => {
-	// 		console.log(error);
-	// 	});
-
-	// 	// 监听主题
-	// 	this.socket.on('deviceList', data => {
-	// 		this.$store.dispatch('device', data);
-	// 	});
-	// 	this.socket.on('group', data => {
-	// 		this.$store.dispatch('group', data);
-	// 	});
-	// 	this.socket.on('rooms', data => {
-	// 		this.$store.dispatch('rooms', data);
-	// 	});
-	// 	this.socket.on('updateOnline', data => {
-	// 		this.$store.dispatch('updateOnline', data);
-	// 	});
-	// 	this.socket.on('addDevice', data => {
-	// 		this.$store.dispatch('addDevice', data);
-	// 	});
-	// 	this.socket.on('deleteDevice', data => {
-	// 		this.$store.dispatch('deleteDevice', data.deviceId);
-	// 	});
-	// 	this.socket.on('updateDevice', data => {
-	// 		console.log(data);
-	// 	});
-	// 	this.socket.on('updateDeviceStatus', data => {
-	// 		this.$store.dispatch('updateDeviceStatus', data);
-	// 		console.log(data);
-	// 	});
-	// },
-
 	mounted() {
 		this.setWidth(document.body.clientWidth);
 		window.onresize = this.onResize;
@@ -219,21 +206,43 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '~@/assets/scss/mixins';
 .app-main {
+	display: flex;
+	flex-direction: column;
+
 	&-title {
-		padding-bottom: 20px;
+		height: 40px;
+		margin: 0 20px;
+		box-sizing: border-box;
+		border-bottom: 1px solid #ebeef5;
 		@include flex-between();
 
 		&-text {
-			font-size: 18px;
 			font-weight: bold;
 		}
 	}
 
-	.scroll {
-		width: 100%;
-		height: 100%;
+	&-content {
+		flex: 1;
+		min-height: calc(100vh - 160px);
+		margin: 20px;
+		box-sizing: border-box;
+		overflow: hidden;
 	}
+}
+
+.router-leave-active,
+.router-enter-active {
+	transition: all 0.4s;
+}
+
+.router-enter {
+	opacity: 0;
+	transform: translateX(30px);
+}
+
+.router-leave-to {
+	opacity: 0;
+	transform: translateX(30px);
 }
 </style>

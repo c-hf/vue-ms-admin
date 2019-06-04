@@ -1,5 +1,5 @@
 <template>
-    <div class="device">
+    <div class="family">
         <div class="content"
              v-loading="loading">
             <el-table :data="tableData"
@@ -8,44 +8,37 @@
                 <el-table-column type="index"
                                  width="50">
                 </el-table-column>
-                <el-table-column label="设备"
-                                 width="80">
-                    <template slot-scope="scope">
+                <el-table-column label="家庭组"
+                                 width="100">
+                    <template>
                         <div class="icon">
-                            <svg-icon :iconClass="deviceIcon[scope.row.categoryItemId]" />
+                            <svg-icon iconClass="icon-house" />
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="deviceId"
-                                 label="DeviceID"
+                <el-table-column prop="groupId"
+                                 label="GroupID"
                                  width="200">
                 </el-table-column>
-                <el-table-column prop="groupId"
-                                 label="GroupID">
-                </el-table-column>
-                <el-table-column prop="name"
+                <el-table-column prop="groupName"
                                  label="名称">
                 </el-table-column>
-                <el-table-column prop="categoryItemId"
-                                 label="设备类型">
+                <el-table-column prop="ownerId"
+                                 label="群主ID">
                 </el-table-column>
-                <el-table-column prop="desc"
-                                 label="介绍">
+                <el-table-column label="群成员数量">
+                    <template slot-scope="scope">
+                        {{ scope.row.member.length }}
+                    </template>
                 </el-table-column>
-                <el-table-column prop="roomId"
-                                 label="所在位置ID">
+                <el-table-column label="所在地">
+                    <template slot-scope="scope">
+                        {{ scope.row.region[0].name }}
+                        {{ scope.row.region[1].name }}
+                        {{ scope.row.region[2].name }}
+                    </template>
                 </el-table-column>
-                <el-table-column prop="networking"
-                                 label="连接方式">
-                </el-table-column>
-                <el-table-column prop="os"
-                                 label="操作系统">
-                </el-table-column>
-                <el-table-column prop="protocol"
-                                 label="通讯时间">
-                </el-table-column>
-                <el-table-column label="创建时间"
-                                 width="200">
+                <el-table-column label="创建时间">
                     <template slot-scope="scope">
                         {{ new Date(scope.row.createTime).toLocaleString('zh-CN', { hour12: false }) }}
                     </template>
@@ -56,22 +49,23 @@
 </template>
 
 <script>
-import { getDevices } from '@/api/admin';
-import { DEVICEICON } from '@/config';
+import { getGroup } from '@/api/admin';
+
 export default {
-	name: 'Device', // 设备概览
+	name: 'Family',
 	data() {
 		return {
 			loading: false,
 			tableData: [],
-			deviceIcon: DEVICEICON,
 		};
 	},
 
+	computed: {},
+
 	methods: {
-		getDevicesFn() {
+		getGroupFn() {
 			this.loading = true;
-			getDevices()
+			getGroup()
 				.then(resData => {
 					this.tableData = resData;
 				})
@@ -89,14 +83,22 @@ export default {
 		},
 	},
 
+	components: {},
+
+	props: {},
+
+	watch: {},
+
 	created() {
-		this.getDevicesFn();
+		this.getGroupFn();
 	},
+
+	mounted() {},
 };
 </script>
 
 <style lang="scss" scoped>
-.device {
+.family {
 	display: flex;
 
 	.content {
@@ -112,6 +114,7 @@ export default {
 		.icon {
 			width: 40px;
 			height: 40px;
+			// border-radius: 50%;
 		}
 	}
 }

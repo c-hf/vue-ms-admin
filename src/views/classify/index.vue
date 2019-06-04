@@ -1,38 +1,19 @@
 <template>
-    <el-card class="classify"
-             shadow="never"
-             v-loading="loading">
-        <el-row :gutter="24">
-            <el-col :span="8">
-                <el-card class="classify-card"
-                         style="height:100px;">
-                </el-card>
-            </el-col>
-            <el-col :span="8">
-                <el-card class="classify-card"
-                         style="height:100px;">
-                </el-card>
-            </el-col>
-            <el-col :span="8">
-                <el-card class="classify-card"
-                         style="height:100px;">
-                </el-card>
-            </el-col>
-            <el-col :span="8">
-                <category-tree :options="options"
-                               @setLoading="setLoading"
-                               @setCategory="setCategory"
-                               @getLatestData="getAllDeviceCategoryFn" />
-            </el-col>
-            <el-col :span="16">
-                <category-card ref="categoryCard"
-                               :category="category"
-                               @setLoading="setLoading"
-                               @getLatestData="getDeviceCategoryByIdFn" />
-            </el-col>
-        </el-row>
-        <router-view />
-    </el-card>
+    <div class="classify"
+         v-loading="loading">
+        <div class="left">
+            <category-tree :options="options"
+                           @setLoading="setLoading"
+                           @setCategory="setCategory"
+                           @getLatestData="getAllDeviceCategoryFn" />
+        </div>
+        <div class="right">
+            <category-card ref="categoryCard"
+                           :category="category"
+                           @setLoading="setLoading"
+                           @getLatestData="getDeviceCategoryByIdFn" />
+        </div>
+    </div>
 </template>
 
 <script>
@@ -158,36 +139,50 @@ export default {
 <style lang="scss" scoped>
 @import '~@/assets/scss/mixins';
 .classify {
-	position: relative;
-	background-color: inherit;
+	@include flex-center();
+	align-items: flex-start;
 
-	&-content {
-		background-color: #f3f6f8;
+	.left {
+		width: 35%;
+		height: 100%;
+		padding-right: 10px;
+		box-sizing: border-box;
 	}
 
-	&-card {
-		margin-bottom: 20px;
-
-		&-content {
-			height: 100px;
-		}
+	.right {
+		width: 65%;
+		height: 100%;
+		padding-left: 10px;
+		box-sizing: border-box;
 	}
 
-	&-left-card {
-		&-footer {
-			padding-top: 37px;
-		}
-	}
+	// &-content {
+	// 	background-color: #f3f6f8;
+	// }
 
-	&-add-category {
-		width: 60px;
-		height: 60px;
-		position: fixed;
-		right: 3%;
-		bottom: 10%;
-		&:hover {
-			box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-		}
-	}
+	// &-card {
+	// 	margin-bottom: 20px;
+
+	// 	&-content {
+	// 		height: 100px;
+	// 	}
+	// }
+
+	// &-left-card {
+	// 	&-footer {
+	// 		padding-top: 37px;
+	// 	}
+	// }
+
+	// &-add-category {
+	// 	width: 60px;
+	// 	height: 60px;
+	// 	position: fixed;
+	// 	right: 3%;
+	// 	bottom: 10%;
+	// 	&:hover {
+	// 		box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+	// 	}
+	// }
 }
 </style>

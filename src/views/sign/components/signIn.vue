@@ -8,8 +8,8 @@
              @keyup.enter.native="onEnter('signInForm')"
              class="form-sign-in">
         <el-form-item>
-            <h1 class="main-title">登录 XXX</h1>
-            <h2 class="subtitle">开启智慧生活</h2>
+            <h1 class="main-title">登录 智家</h1>
+            <h2 class="subtitle">管理员后台</h2>
         </el-form-item>
         <el-form-item prop="id">
             <el-autocomplete placeholder="邮箱"
@@ -20,30 +20,27 @@
         </el-form-item>
         <el-form-item prop="password">
             <el-input placeholder="密码"
-                      type="password"
+                      show-password
                       v-model="data.password">
             </el-input>
         </el-form-item>
         <el-form-item size="medium">
             <el-button type="primary"
                        class="sign-in-btn"
-                       @click="onSubmit('signInForm')">登录</el-button>
-            <span class="sign-up-btn">
-                没有账号？
-                <el-button type="text"
-                           @click="signUp">注册</el-button>
-            </span>
+                       @click="onSubmit('signInForm')">
+                登录
+            </el-button>
         </el-form-item>
         <el-form-item>
-            Copyright © 2018-2018 CHF All Rights Reserved
+            Copyright © 2018-2019 CHF All Rights Reserved
         </el-form-item>
     </el-form>
 </template>
 
 <script>
-import { signIn, getUserAvatar } from '@/api/user';
-import { EMAIL_SUFFIX } from './config';
 import storage from '@/assets/js/storage';
+import { signIn, getUserAvatar } from '@/api/user';
+import { EMAIL_SUFFIX } from '../config';
 
 export default {
 	name: 'SignIn',
@@ -58,7 +55,6 @@ export default {
 				this.vId = false;
 				callback(new Error('请输入邮箱'));
 			} else {
-				// this.showCode = true;
 				if (phoneRegExp.test(this.data.id)) {
 					this.data.type = 'phone';
 					this.getUserAvatarFn();
@@ -112,8 +108,11 @@ export default {
 		querySearch(queryString, callback) {
 			let [restaurants, results, email] = [[], [], ''];
 			if (queryString.includes('@') && !queryString.startsWith('@')) {
-				const emailRegExp = /^([a-z0-9]+(?:[._-][a-z0-9]+)*)@/;
-				email = queryString.match(emailRegExp)[1];
+				const emailRegExp = /^([a-zA-Z0-9]+(?:[._-][a-zA-Z0-9]+)*)@/;
+				const query = queryString.match(emailRegExp);
+				if (query) {
+					email = queryString.match(emailRegExp)[1];
+				}
 				Array.from(this.emailSuffix).forEach(item => {
 					restaurants.push({ value: `${email}${item.value}` });
 				});
@@ -127,6 +126,11 @@ export default {
 
 		createFilter(queryString) {
 			return restaurant => {
+				const emailRegExp = /^([a-zA-Z0-9]+(?:[._-][a-zA-Z0-9]+)*)@(\w+\.?\w+)/;
+				const query = queryString.match(emailRegExp);
+				if (query && query.length > 2) {
+					queryString = `${query[1]}@${query[2].toLowerCase()}`;
+				}
 				return restaurant.value.includes(queryString);
 			};
 		},
@@ -156,6 +160,9 @@ export default {
 
 		// getUserAvatar 封装
 		getUserAvatarFn() {
+			if (this.data.type === 'email') {
+				this.data.id = this.data.id.toLowerCase();
+			}
 			getUserAvatar({
 				id: this.data.id,
 				type: this.data.type,
@@ -178,6 +185,10 @@ export default {
 		// signIn 方法封装
 		signInFn() {
 			this.$emit('setLoad', true);
+			if (this.data.type === 'email') {
+				this.data.id = this.data.id.toLowerCase();
+			}
+
 			signIn(this.data)
 				.then(resData => {
 					storage.set('token', resData.token);

@@ -1,8 +1,8 @@
 // axios URL
-const baseURL = 'http://localhost:3000';
+const BASEURL = 'http://118.24.169.3/v1';
 
 // 上传头像 URL
-const uploadImgUrl = 'http://localhost:3000/api/user/setUserAvatar';
+const UPLOADIMGURL = 'http://118.24.169.3/v1/api/user/setUserAvatar';
 
 const OPTIONS = [
 	{
@@ -46,4 +46,17 @@ const RULES = {
 	],
 };
 
-export { baseURL, uploadImgUrl, OPTIONS, RULES };
+const DEVICEICON = {
+	ceilingLamp: 'icon-light_lamp',
+	tableLamp: 'icon-tableLamp',
+	airConditioner: 'icon-airConditioner',
+	LEDLamp: 'icon-light',
+	alarm: 'icon-shengguangbaojingqi',
+	airFan: 'icon-fengshan',
+	flameSensor: 'icon-huoyantanceqi',
+	humidityTemperatureSensor: 'icon-icon-temperature',
+	lightIntensitySensor: 'icon-sensor-guangzhao',
+	car: 'icon-chelianwang',
+};
+
+export { BASEURL, UPLOADIMGURL, OPTIONS, RULES, DEVICEICON };

@@ -12,6 +12,7 @@ export const RULES = {
 			trigger: 'blur',
 		},
 	],
+
 	region: [
 		{
 			required: true,

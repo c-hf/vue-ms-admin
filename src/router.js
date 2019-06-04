@@ -25,7 +25,16 @@ export default new Router({
 					},
 					component: Home,
 				},
-				// 用户模块
+				// 家庭组
+				{
+					path: '/family',
+					name: 'family',
+					meta: {
+						requireAuth: true,
+					},
+					component: () => import('./views/family'), // 用户模块
+				},
+				// 用户
 				{
 					path: '/user',
 					name: 'user',
@@ -34,52 +43,33 @@ export default new Router({
 					},
 					component: () => import('./views/user'), // 用户模块
 				},
-				// 设备模块
+				// 设备
 				{
-					path: '/device',
+					path: '/device/overview',
 					name: 'device',
 					meta: {
 						requireAuth: true,
 					},
-					beforeEnter: (to, from, next) => {
-						if (to.fullPath === '/device') {
-							next({
-								path: '/device/overview',
-							});
-						} else {
-							next();
-						}
-					},
 					component: () => import('./views/device'),
-					children: [
-						{
-							path: 'overview',
-							name: 'overview',
-							meta: {
-								requireAuth: true,
-							},
-							component: () => import('./views/overview'),
-						},
-						// 分类
-						{
-							path: 'classify',
-							name: 'classify',
-							meta: {
-								requireAuth: true,
-							},
-							component: () => import('./views/classify'),
-							children: [],
-						},
-						// 详情
-						{
-							path: 'details/:categoryItemId',
-							name: 'details',
-							meta: {
-								requireAuth: true,
-							},
-							component: () => import('./views/details'),
-						},
-					],
+				},
+				// 分类
+				{
+					path: 'device/classify',
+					name: 'classify',
+					meta: {
+						requireAuth: true,
+					},
+					component: () => import('./views/classify'),
+					children: [],
+				},
+				// 详情
+				{
+					path: 'device/details/:categoryItemId',
+					name: 'details',
+					meta: {
+						requireAuth: true,
+					},
+					component: () => import('./views/details'),
 				},
 				// 设置
 				{
@@ -90,33 +80,14 @@ export default new Router({
 					},
 					component: () => import('./views/set'),
 				},
-				// 消息中心
-				{
-					path: '/message',
-					name: 'message',
-					meta: {
-						requireAuth: true,
-					},
-					component: () => import('./views/message'),
-				},
 			],
 		},
 
-		// 登录与注册,
+		// 登录,
 		{
 			path: '/sign',
 			name: 'sign',
 			component: () => import('./views/sign'),
-		},
-
-		// 个人信息完善
-		{
-			path: '/information',
-			name: 'information',
-			meta: {
-				requireAuth: true,
-			},
-			component: () => import('./views/information'),
 		},
 	],
 	// scrollBehavior(to, from, savedPosition) {

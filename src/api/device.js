@@ -182,3 +182,4 @@ export const getDeviceUnique = (id, type) => {
 	};
 	return axiosFn(uniqueOptions);
 };
+

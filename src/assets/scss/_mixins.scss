@@ -49,3 +49,24 @@
 	white-space: normal !important;
 	word-wrap: break-word;
 }
+
+@mixin content-background() {
+	padding: 20px;
+	border: 1px solid #ebeef5;
+	border-radius: 4px;
+	box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+	background-color: #fff;
+}
+
+@mixin flex-direction($direction: column) {
+	display: flex;
+	flex-direction: $direction;
+}
+
+@mixin info-card() {
+	background-color: #fff;
+	color: #303133;
+	border: 1px solid #ebeef5;
+	border-radius: 4px;
+	box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}

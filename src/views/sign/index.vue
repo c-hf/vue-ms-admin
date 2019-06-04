@@ -11,15 +11,15 @@
                             <div class="left-content">
                                 <span class="left-user-avatar">
                                     <img :src="avatar"
-                                         alt="avatar">
+                                         alt="avatar"
+                                         draggable="false">
                                 </span>
                                 <span class="left-user-title">
                                     {{ title }}
                                     <p>{{ subtitle }}</p>
                                 </span>
-                                <span class="left-toggle-btn"
-                                      @click="toggleSign">
-                                    <i class="el-icon-arrow-right"></i>
+                                <span class="left-toggle-btn">
+                                    <i class="el-icon-s-help"></i>
                                 </span>
                             </div>
                         </el-col>
@@ -28,12 +28,7 @@
                         <el-col :span="16"
                                 class="right"
                                 v-show="show">
-                            <sign-up v-if="sign"
-                                     @toggleSign="toggleSign"
-                                     @setLoad="setLoad" />
-                            <sign-in v-else
-                                     @toggleSign="toggleSign"
-                                     @setAvatar="setAvatar"
+                            <sign-in @setAvatar="setAvatar"
                                      @setLoad="setLoad" />
                         </el-col>
                     </transition>
@@ -44,9 +39,8 @@
 </template>
 
 <script>
-import SignUp from './signUp';
-import SignIn from './signIn';
-import { getUserInfo } from '@/api/user';
+// import SignUp from './components/signUp';
+import SignIn from './components/signIn';
 
 import avatar from '@//assets/img/avatar/avatar.jpg';
 
@@ -66,52 +60,16 @@ export default {
 	methods: {
 		// 获取头像
 		setAvatar(avatar) {
-			this.avatar = avatar || 'http://localhost:3000/static/avatar/0.jpg';
-		},
-
-		// 切换登录/注册页
-		toggleSign() {
-			this.show = false;
-			setTimeout(() => {
-				this.sign ? (this.sign = false) : (this.sign = true);
-				this.title === 'SignIn'
-					? (this.title = 'SignUp')
-					: (this.title = 'SignIn');
-				this.show = true;
-			}, 300);
+			this.avatar = avatar;
 		},
 
 		// loading
 		setLoad(value) {
 			this.loading = value;
 		},
-
-		// 获取 UserInfo
-		getUserInfoFn() {
-			this.loading = true;
-			getUserInfo()
-				.then(resData => {
-					this.$store.dispatch('user', resData);
-					this.loading = false;
-					if (!resData.groupId) {
-						this.$router.push({ name: 'information' });
-					}
-					this.$router.push({ name: 'home' });
-				})
-				.catch(error => {
-					this.loading = false;
-					this.$message({
-						showClose: true,
-						center: true,
-						message: error.message,
-						type: 'error',
-					});
-				});
-		},
 	},
 
 	components: {
-		SignUp,
 		SignIn,
 	},
 };
@@ -121,6 +79,7 @@ export default {
 .sign {
 	width: 100%;
 	height: 100%;
+	max-height: 100vh;
 	min-width: 1024px;
 	position: absolute;
 	top: 0;
@@ -133,9 +92,15 @@ export default {
 		display: flex;
 	}
 
+	@media screen and (min-width: 1600px) {
+		.el-card {
+			height: 660px !important;
+		}
+	}
+
 	.el-card {
 		width: 60%;
-		height: 80%;
+		height: 560px;
 		min-width: 800px;
 		margin: auto;
 
@@ -152,6 +117,7 @@ export default {
 			background-size: 100% 100%;
 			background-position: center center;
 			position: relative;
+			user-select: none;
 
 			&::after {
 				content: ' ';

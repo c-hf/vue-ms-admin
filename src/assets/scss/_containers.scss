@@ -1,12 +1,10 @@
-#app {
-	width: 100%;
-	min-height: 100vh;
-}
 .app-container {
 	width: 100%;
 	height: 100%;
+	overflow: hidden;
 
 	.app-header {
+		width: 100%;
 		padding: 0;
 		background-color: #ffffff;
 		box-shadow: 0 0 24px 0 rgba(0, 0, 0, 0.06),
@@ -19,22 +17,44 @@
 		height: 100%;
 		overflow: hidden;
 
-		.el-aside {
+		.app-aside {
+			overflow: hidden;
+			background-color: #fff;
 			transition: all 0.5s;
+			box-shadow: 0 0 12px 0px rgba(0, 0, 0, 0.06);
+			z-index: 9;
 		}
 
 		.app-main {
 			width: 100%;
-			height: 100%;
+			padding: 0;
+			overflow: hidden;
 			background-color: #f3f6f8;
 		}
 
-		.el-scrollbar__wrap {
-			overflow-x: auto;
+		.app-footer {
+			background-color: #fff;
+			color: rgba(0, 0, 0, 0.45);
+			font-size: 13px;
+			line-height: 60px;
+			text-align: center;
+			user-select: none;
 		}
+	}
+	.el-scrollbar__wrap {
+		overflow-x: hidden;
+	}
+	.el-scrollbar__bar {
+		z-index: 999;
+	}
+}
 
-		.el-scrollbar__bar {
-			z-index: 999;
+@media screen and (min-width: 1600px) {
+	.app-container {
+		.app-content {
+			.app-main {
+				overflow: hidden;
+			}
 		}
 	}
 }
