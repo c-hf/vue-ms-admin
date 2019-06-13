@@ -113,7 +113,7 @@ export default {
 
 		.left {
 			height: 100%;
-			background-image: url(~@/assets/img/signLeft/3.jpg);
+			background-image: url(~@/assets/img/signLeft/1.jpg);
 			background-size: 100% 100%;
 			background-position: center center;
 			position: relative;
